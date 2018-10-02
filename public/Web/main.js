@@ -141,7 +141,7 @@ function GetParams() {
 		if(StartURL == "none"){
 			console.log("StartURL is 'none' creating blank")
 		}else{
-			html = setURL(StartURL);
+			setURL(StartURL);
 		}
 		if (history.pushState) {
 			URI.searchParams.delete("StartURL")
