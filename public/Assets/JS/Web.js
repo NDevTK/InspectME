@@ -32,6 +32,13 @@ function SendNewChanges() {
     return;
 }
 
+function loop_safe() {
+    if(!loop){
+        loop = true;
+        setInterval(SendNewChanges, UpdateRate);
+    }
+}
+
 var socket = new WebSocket("wss://node2.wsninja.io");
 
 socket.addEventListener('open', function(event) { // LOGIN
@@ -52,9 +59,8 @@ socket.addEventListener('message', function(event) { // OnMessage
                     PAGE: page
                 }));
             } else {
-				Loop = true;
                 setURL(StartURL);
-				setInterval(SendNewChanges, UpdateRate);
+				loop_safe();
 				console.log("Created new website")
 			}
 			
@@ -69,9 +75,7 @@ socket.addEventListener('message', function(event) { // OnMessage
                 html = message.DATA;
                 document.documentElement.innerHTML = html;
                 CONTENT[message.PAGE] = true;
-				if(!Loop){
-				Loop = true
-                setInterval(SendNewChanges, UpdateRate); // Start changes loop
+                loop_safe();
 				}
             } else if (CONTENT[message.PAGE]) {
                 switch (message.ACTION) {
