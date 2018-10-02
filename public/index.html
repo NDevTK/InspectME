@@ -1,64 +1,160 @@
-<html>
-<head>
-<title>InspectME</title>
-<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-<link rel="icon" href="/favicon.ico" type="image/x-icon">
-<link rel="stylesheet" href="/Assets/CSS/main.css">
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-<script>
-var guid;
-var url;
-var thing = "https://inspectme.tk/Web/?guid="
+var Sync = true;
+var MSG_ALLOWED = false;
+var cors_proxy = "https://cors.io/?";
 
-function addhttps(url) {
-    if (!/^(?:f|ht)tps?\:\/\//.test(url)) {
-        url = "https://" + url;
+var ID;
+var CONTENT = [];
+var URI;
+var reply;
+var page;
+var html;
+var Loop = false;
+var old_html;
+var dmp = new diff_match_patch();
+var is_error = false;
+var UpdateRate = 1000;
+
+if (GetParams()) {
+	window.location.replace("/#Help!Invalid-Parameters");
+}
+
+function SendNewChanges() {
+	old_html = html; // Both are the same
+    html = document.documentElement.innerHTML; // gets new HTML
+    if (old_html != html && MSG_ALLOWED) {
+        socket.send(JSON.stringify({
+            ACTION: "SYNC",
+            PAGE: page,
+            DATA: dmp.patch_make(old_html, html)
+        }));
     }
-    return url;
+    return;
 }
 
-function GetStarted() {
-var url = prompt("Please enter an url (optional):");
+var socket = new WebSocket("wss://node2.wsninja.io");
 
-if(url){
-url = addhttps(url);
-}else{
-url = "none";
+socket.addEventListener('open', function(event) { // LOGIN
+    socket.send(JSON.stringify({
+        guid: id
+    }));
+});
+
+socket.addEventListener('message', function(event) { // OnMessage
+    if (isJSON(event.data)) { // IF json
+        var message = JSON.parse(event.data);
+        if (message.accepted === true) { // If webshocket allows message
+            MSG_ALLOWED = true;
+			
+            if (!CONTENT[page]) {
+                socket.send(JSON.stringify({
+                    ACTION: "GET",
+                    PAGE: page
+                }));
+            } else {
+				Loop = true;
+				setInterval(SendNewChanges, UpdateRate);
+				console.log("Created new website")
+			}
+			
+			} else {
+            if (!MSG_ALLOWED) {
+                alert("Website is read only");
+            }
+			if (message.restricted  === true) {
+                alert("Provided GUID is not accepted");
+				window.location.replace("/#Help!Denied-GUID");
+            } else if (message.ACTION == "DOWNLOAD") {				
+                html = message.DATA;
+                document.documentElement.innerHTML = html;
+                CONTENT[message.PAGE] = true;
+				if(!Loop){
+				Loop = true
+                setInterval(SendNewChanges, UpdateRate); // Start changes loop
+				}
+            } else if (CONTENT[message.PAGE]) {
+                switch (message.ACTION) {
+                    case "GET":
+                        if (MSG_ALLOWED) {
+                            socket.send(JSON.stringify({
+                                ACTION: "DOWNLOAD",
+                                PAGE: message.PAGE,
+                                DATA: document.documentElement.innerHTML
+                            }))
+                        }
+                        break;
+
+                    case "SYNC":
+                        ApplyChanges(message);
+                        break;
+                }
+            }
+        }
+    } else {
+        alert("ERROR NOT JSON");
+    }
+});
+
+function ApplyChanges(Patch) {
+    if (Patch.PAGE == page) {
+		html = dmp.patch_apply(Patch.DATA, document.documentElement.innerHTML)[0];
+		document.documentElement.innerHTML = html;
+    } else {
+        alert("MUTI-PAGE not supported :(");
+    }
 }
 
-var xhr = new XMLHttpRequest();
+
+function setURL(url) {
+  var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
     if (xhr.readyState === 4) {
-	  guid = JSON.parse(xhr.response).client;
+	  rURL = xhr.responseURL.split('?')[1];
+      origin = new URL(rURL).origin;
+      html = xhr.response;
+      document.documentElement.innerHTML = "<base href='" + origin + "' />" + html;
+	  CONTENT[page] = true;
     }
   }
   
   xhr.onerror = function() {
-	  window.location.replace("/#Help!Unable-To-Create-WebShocket");
+	  window.location.replace("/#Help!Unable-To-Download-Website");
   }
   
-  xhr.open('GET', "https://node2.wsninja.io/?gen=broadcast", true);
+  xhr.open('GET', cors_proxy+encodeURI(url), true);
   xhr.send();
-  prompt("Give this to someone idk: ", thing + guid);
-  window.location.replace(thing + guid + "&StartURL=" + url);
 }
-</script>
-</head>
-<body>
-<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-   <a class="navbar-brand" style="color:red">InspectME</a>
-  <ul class="navbar-nav">
-    <li class="nav-item">
-      <a class="nav-link" href="/">Main</a>
-    </li>
-  </ul>
-</nav>
 
-<div class="jumbotron">
-<h1>Welcome to InspectME</h1>
-<p class="lead">Allowing the power of Inspect Element to be sheared since 2018</p>
-<button type="button" class="btn btn-info" onclick="GetStarted()">Get Started</button>
-</div>
+function GetParams() {
+    URI = new URL(location.href);
+    if (URI.searchParams.has("guid") && URI.searchParams.get("guid") != "") {
+        id = URI.searchParams.get("guid");
+    } else {
+        is_error = true;
+    }
+    if (URI.searchParams.has("page")) {
+        page = URI.searchParams.get("page")
+    } else {
+        page = "1";
+    }
+    if (URI.searchParams.has("StartURL")) {
+		StartURL = URI.searchParams.get("StartURL");
+		if(StartURL == "none"){
+			console.log("StartURL is 'none' creating blank")
+		}else{
+			setURL(StartURL);
+		}
+		if (history.pushState) {
+			URI.searchParams.delete("StartURL")
+			window.history.pushState({path:URI.toString()},'',URI.toString());
+		}
+	}
+    return is_error
+}
 
-</body>
-</html>
+function isJSON(str) {
+    try {
+        return (JSON.parse(str) && !!str);
+    } catch (e) {
+        return false;
+    }
+}
