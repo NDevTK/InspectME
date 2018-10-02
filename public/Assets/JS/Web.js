@@ -145,7 +145,7 @@ function GetParams() {
 		}
 		if (history.pushState) {
 			URI.searchParams.delete("StartURL")
-			window.history.pushState({path:URI.toString()},'',URI.toString());
+			window.history.replaceState({path:URI.toString()},'',URI.toString());
 		}
 	}
     return is_error
