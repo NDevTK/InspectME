@@ -33,8 +33,8 @@ function SendNewChanges() {
 }
 
 function loop_safe() {
-    if(!loop){
-        loop = true;
+    if(!Loop){
+        Loop = true;
         setInterval(SendNewChanges, UpdateRate);
     }
 }
