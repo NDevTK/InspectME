@@ -7,6 +7,7 @@ var CONTENT = [];
 var URI;
 var reply;
 var page;
+var StartURL;
 var html;
 var Loop = false;
 var old_html;
@@ -52,6 +53,7 @@ socket.addEventListener('message', function(event) { // OnMessage
                 }));
             } else {
 				Loop = true;
+                setURL(StartURL);
 				setInterval(SendNewChanges, UpdateRate);
 				console.log("Created new website")
 			}
@@ -111,8 +113,7 @@ function setURL(url) {
 	  rURL = xhr.responseURL.split('?')[1];
       origin = new URL(rURL).origin;
       html = xhr.response;
-      document.documentElement.innerHTML = "<base href='" + cors_proxy + origin + "' />" + html;
-	  CONTENT[page] = true;
+      document.documentElement.innerHTML = "<base href='" + cors_proxy + origin + "' />" + html;	  
     }
   }
   
@@ -141,7 +142,7 @@ function GetParams() {
 		if(StartURL == "none"){
 			console.log("StartURL is 'none' creating blank")
 		}else{
-			setURL(StartURL);
+            CONTENT[page] = true;
 		}
 		if (history.pushState) {
 			URI.searchParams.delete("StartURL")
