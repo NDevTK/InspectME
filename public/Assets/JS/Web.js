@@ -75,8 +75,6 @@ socket.addEventListener('message', function(event) { // OnMessage
                 html = message.DATA;
                 document.documentElement.innerHTML = html;
                 CONTENT[message.PAGE] = true;
-                loop_safe();
-				}
             } else if (CONTENT[message.PAGE]) {
                 switch (message.ACTION) {
                     case "GET":
