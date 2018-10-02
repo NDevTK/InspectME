@@ -1,3 +1,7 @@
-body  {
-    background-image: url("/Assets/Images/bg01.jpg");
+html { 
+  background: url(/Assets/Images/bg01.jpg) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
 }
