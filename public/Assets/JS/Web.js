@@ -116,7 +116,7 @@ function setURL(url) {
 	  rURL = xhr.responseURL.split('?')[1];
       origin = new URL(rURL).origin;
       html = xhr.response;
-      document.documentElement.innerHTML = "<base href='" + cors_proxy + origin + "' />" + html;	  
+      document.documentElement.innerHTML = "<base href='" + cors_proxy + origin + "/' />" + html;	  
     }
   }
   
