@@ -75,6 +75,7 @@ socket.addEventListener('message', function(event) { // OnMessage
                 html = message.DATA;
                 document.documentElement.innerHTML = html;
                 CONTENT[message.PAGE] = true;
+                loop_safe();
             } else if (CONTENT[message.PAGE]) {
                 switch (message.ACTION) {
                     case "GET":
@@ -129,7 +130,7 @@ function setURL(url) {
 
 function GetParams() {
     URI = new URL(location.href);
-    if (URI.searchParams.has("guid") && URI.searchParams.get("guid") != "") {
+    if (URI.searchParams.has("guid") && URI.searchParams.get("guid") !== "") {
         id = URI.searchParams.get("guid");
     } else {
         is_error = true;
