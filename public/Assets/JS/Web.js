@@ -1,6 +1,6 @@
 var Sync = true;
 var MSG_ALLOWED = false;
-var cors_proxy = "https://cors.io/?";
+var cors_proxy = "https://cors-anywhere.herokuapp.com/";
 
 var ID;
 var CONTENT = [];
