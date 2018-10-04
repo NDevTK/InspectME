@@ -15,6 +15,20 @@ var dmp = new diff_match_patch();
 var is_error = false;
 var UpdateRate = 1000;
 
+
+document.onclick = function (e) {
+  e = e ||  window.event;
+  var element = e.target || e.srcElement;
+  if (element.tagName == 'A') {
+    ChangePage(element.href);
+    return false;
+  }
+};
+
+function ChangePage(url){
+    setURL(url);
+}
+
 if (GetParams()) {
 	window.location.replace("/#Help!Invalid-Parameters");
 }
@@ -115,29 +129,30 @@ function addhttps(url) {
 }
 
 function setURL(url) {
-  document.documentElement.innerHTML = "<h1>Loading URL...</h1>";
-  url = addhttps(url);
-  var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4) {
-        finel_url = xhr.getResponseHeader("X-Final-URL");
-    try {
-        origin = new URL(xhr.responseURL).origin;
-    }catch(err) {
-        alert("Unable to parse URL  :(");
-        window.location.replace("/#Help!Unable-To-Parse-URL");
-   }
-   try {
-        finel_url = xhr.getResponseHeader("X-Final-URL");
-    }catch(err) {
-        alert("Unknown error 1");
-        window.location.replace("/#Help!Unknown-Error-1");
-   }
-   html = xhr.response;
-   document.documentElement.innerHTML = "<base href='" + xhr.getResponseHeader("X-Final-URL") + "/' />" + html;
-   loop_safe();
-   }
-  }
+    if(!MSG_ALLOWED){return;}
+    document.documentElement.innerHTML = "<h1>Loading URL...</h1>";
+    url = addhttps(url);
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            finel_url = xhr.getResponseHeader("X-Final-URL");
+        try {
+            origin = new URL(xhr.responseURL).origin;
+        }catch(err) {
+            alert("Unable to parse URL  :(");
+            window.location.replace("/#Help!Unable-To-Parse-URL");
+        }
+        try {
+            finel_url = xhr.getResponseHeader("X-Final-URL");
+        }catch(err) {
+            alert("Unknown error 1");
+            window.location.replace("/#Help!Unknown-Error-1");
+        }
+        html = xhr.response;
+        document.documentElement.innerHTML = "<base href='" + xhr.getResponseHeader("X-Final-URL") + "/' />" + html;
+        loop_safe();
+        }
+}
 
   xhr.onerror = function() {
 	  window.location.replace("/#Help!Unable-To-Download-Website");
