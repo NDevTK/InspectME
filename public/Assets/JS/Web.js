@@ -25,8 +25,8 @@ document.onclick = function (e) {
   }
 };
 
-function ChangePage(url){
-    setURL(url);
+function ChangePage(url){ 
+    setURL(url); // Only one page at a time currently :(
 }
 
 if (GetParams()) {
@@ -163,8 +163,9 @@ function setURL(url) {
 }
 
 function rick_roll() {
-    document.documentElement.innerHTML = '<iframe width="1280" height="720" src="https://www.youtube.com/embed/dQw4w9WgXcQ?loop=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+    document.documentElement.innerHTML = '<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" frameborder="0" style="overflow:hidden;height:100%;width:100%" height="100%" width="100%" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
 }
+
 function GetParams() {
     URI = new URL(location.href);
     if (URI.searchParams.has("guid") && URI.searchParams.get("guid") !== "") {
@@ -186,7 +187,7 @@ function GetParams() {
 		}
 		if (history.pushState) {
 			URI.searchParams.delete("StartURL")
-            window.history.replaceState({}, URI.toString());
+            window.history.replaceState({}, "", URI.toString());
 		}
 	}
     return is_error
