@@ -60,7 +60,6 @@ socket.addEventListener('message', function(event) { // OnMessage
                 }));
             } else {
                 setURL(StartURL);
-				loop_safe();
 				console.log("Created new website")
 			}
 			
@@ -116,6 +115,7 @@ function addhttps(url) {
 }
 
 function setURL(url) {
+  document.documentElement.innerHTML = "<h1>Loading URL...</h1>";
   url = addhttps(url);
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
@@ -135,6 +135,7 @@ function setURL(url) {
    }
    html = xhr.response;
    document.documentElement.innerHTML = "<base href='" + xhr.getResponseHeader("X-Final-URL") + "/' />" + html;
+   loop_safe();
    }
   }
 
