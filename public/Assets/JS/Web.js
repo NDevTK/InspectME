@@ -1,6 +1,6 @@
 var Sync = true;
 var MSG_ALLOWED = false;
-var cors_proxy = "https://cors-anywhere.herokuapp.com/";
+const cors_proxy = "https://cors-anywhere.herokuapp.com/";
 
 var ID;
 var CONTENT = [];
@@ -120,14 +120,21 @@ function setURL(url) {
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
     if (xhr.readyState === 4) {
+        finel_url = xhr.getResponseHeader("X-Final-URL");
     try {
         origin = new URL(xhr.responseURL).origin;
     }catch(err) {
         alert("Unable to parse URL  :(");
         window.location.replace("/#Help!Unable-To-Parse-URL");
    }
+   try {
+        finel_url = xhr.getResponseHeader("X-Final-URL");
+    }catch(err) {
+        alert("Unknown error 1");
+        window.location.replace("/#Help!Unknown-Error-1");
+   }
    html = xhr.response;
-   document.documentElement.innerHTML = "<base href='" + cors_proxy + origin + "/' />" + html;
+   document.documentElement.innerHTML = "<base href='" + xhr.getResponseHeader("X-Final-URL") + "/' />" + html;
    }
   }
 
