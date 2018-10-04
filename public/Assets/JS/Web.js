@@ -113,13 +113,17 @@ function setURL(url) {
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
     if (xhr.readyState === 4) {
-	  rURL = xhr.responseURL.split('?')[1];
+	  rURL = xhr.responseURL.split('/')[1];
       origin = new URL(rURL).origin;
       html = xhr.response;
       document.documentElement.innerHTML = "<base href='" + cors_proxy + origin + "/' />" + html;	  
     }
   }
   
+function rick_roll() {
+    document.documentElement.innerHTML = "<iframe width="1280" height="720" src="https://www.youtube.com/embed/dQw4w9WgXcQ?loop=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>";
+}
+
   xhr.onerror = function() {
 	  window.location.replace("/#Help!Unable-To-Download-Website");
   }
