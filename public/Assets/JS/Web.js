@@ -121,7 +121,7 @@ function setURL(url) {
   }
   
 function rick_roll() {
-    document.documentElement.innerHTML = "<iframe width="1280" height="720" src="https://www.youtube.com/embed/dQw4w9WgXcQ?loop=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>";
+    document.documentElement.innerHTML = '<iframe width="1280" height="720" src="https://www.youtube.com/embed/dQw4w9WgXcQ?loop=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
 }
 
   xhr.onerror = function() {
