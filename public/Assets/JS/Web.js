@@ -15,7 +15,7 @@ var dmp = new diff_match_patch();
 var is_error = false;
 var UpdateRate = 1000;
 
-
+if(MSG_ALLOWED){
 document.onclick = function (e) {
   e = e ||  window.event;
   var element = e.target || e.srcElement;
@@ -24,6 +24,7 @@ document.onclick = function (e) {
     return false;
   }
 };
+}
 
 function ChangePage(url){ 
     setURL(url); // Only one page at a time currently :(
