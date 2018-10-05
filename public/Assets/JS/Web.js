@@ -1,6 +1,7 @@
 var Sync = true;
 var MSG_ALLOWED = false;
 const cors_proxy = "https://cors-anywhere.herokuapp.com/";
+var UpdateRate = 1000;
 
 var ID;
 var CONTENT = [];
@@ -13,29 +14,18 @@ var Loop = false;
 var old_html;
 var dmp = new diff_match_patch();
 var is_error = false;
-var UpdateRate = 1000;
 
-if(MSG_ALLOWED){
-document.onclick = function (e) {
-  e = e ||  window.event;
-  var element = e.target || e.srcElement;
-  if (element.tagName == 'A') {
-    ChangePage(element.href);
-    return false;
-  }
-};
-}
 
-function ChangePage(url){ 
+function ChangePage(url) {
     setURL(url); // Only one page at a time currently :(
 }
 
 if (GetParams()) {
-	window.location.replace("/#Help!Invalid-Parameters");
+    window.location.replace("/#Help!Invalid-Parameters");
 }
 
 function SendNewChanges() {
-	old_html = html; // Both are the same
+    old_html = html; // Both are the same
     html = document.documentElement.innerHTML; // gets new HTML
     if (old_html != html && MSG_ALLOWED) {
         socket.send(JSON.stringify({
@@ -48,10 +38,22 @@ function SendNewChanges() {
 }
 
 function loop_safe() {
-    if(!Loop){
+    if (!Loop && MSG_ALLOWED) {
         Loop = true;
         setInterval(SendNewChanges, UpdateRate);
+        register_clickevent();
     }
+}
+
+function register_clickevent() {
+    document.onclick = function(e) {
+        e = e || window.event;
+        var element = e.target || e.srcElement;
+        if (element.tagName == 'A') {
+            ChangePage(element.href);
+            return false;
+        }
+    };
 }
 
 var socket = new WebSocket("wss://node2.wsninja.io");
@@ -67,7 +69,7 @@ socket.addEventListener('message', function(event) { // OnMessage
         var message = JSON.parse(event.data);
         if (message.accepted === true) { // If webshocket allows message
             MSG_ALLOWED = true;
-			
+
             if (!CONTENT[page]) {
                 socket.send(JSON.stringify({
                     ACTION: "GET",
@@ -75,17 +77,17 @@ socket.addEventListener('message', function(event) { // OnMessage
                 }));
             } else {
                 setURL(StartURL);
-				console.log("Created new website")
-			}
-			
-			} else {
+                console.log("Created new website")
+            }
+
+        } else {
             if (!MSG_ALLOWED) {
                 alert("Website is read only");
             }
-			if (message.restricted  === true) {
+            if (message.restricted === true) {
                 alert("Provided GUID is not accepted");
-				window.location.replace("/#Help!Denied-GUID");
-            } else if (message.ACTION == "DOWNLOAD") {				
+                window.location.replace("/#Help!Denied-GUID");
+            } else if (message.ACTION == "DOWNLOAD") {
                 html = message.DATA;
                 document.documentElement.innerHTML = html;
                 CONTENT[message.PAGE] = true;
@@ -115,8 +117,8 @@ socket.addEventListener('message', function(event) { // OnMessage
 
 function ApplyChanges(Patch) {
     if (Patch.PAGE == page) {
-		html = dmp.patch_apply(Patch.DATA, document.documentElement.innerHTML)[0];
-		document.documentElement.innerHTML = html;
+        html = dmp.patch_apply(Patch.DATA, document.documentElement.innerHTML)[0];
+        document.documentElement.innerHTML = html;
     } else {
         alert("MUTI-PAGE not supported :(");
     }
@@ -130,42 +132,44 @@ function addhttps(url) {
 }
 
 function setURL(url) {
-    if(!MSG_ALLOWED){return;}
+    if (!MSG_ALLOWED) {
+        return;
+    }
     document.documentElement.innerHTML = "<h1>Loading URL...</h1>";
     url = addhttps(url);
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
             finel_url = xhr.getResponseHeader("X-Final-URL");
-        try {
-            origin = new URL(xhr.responseURL).origin;
-        }catch(err) {
-            alert("Unable to parse URL  :(");
-            window.location.replace("/#Help!Unable-To-Parse-URL");
+            try {
+                origin = new URL(xhr.responseURL).origin;
+            } catch (err) {
+                alert("Unable to parse URL  :(");
+                window.location.replace("/#Help!Unable-To-Parse-URL");
+            }
+            try {
+                finel_url = xhr.getResponseHeader("X-Final-URL");
+            } catch (err) {
+                alert("Unknown error 1");
+                window.location.replace("/#Help!Unknown-Error-1");
+            }
+            html = xhr.response;
+            document.documentElement.innerHTML = "<base href='" + xhr.getResponseHeader("X-Final-URL") + "/' />" + html;
+            loop_safe();
         }
-        try {
-            finel_url = xhr.getResponseHeader("X-Final-URL");
-        }catch(err) {
-            alert("Unknown error 1");
-            window.location.replace("/#Help!Unknown-Error-1");
-        }
-        html = xhr.response;
-        document.documentElement.innerHTML = "<base href='" + xhr.getResponseHeader("X-Final-URL") + "/' />" + html;
-        loop_safe();
-        }
-}
+    };
 
-  xhr.onerror = function() {
-	  window.location.replace("/#Help!Unable-To-Download-Website");
-  }
-  
-  xhr.open('GET', cors_proxy+encodeURI(url), true);
-  xhr.send();
+    xhr.onerror = function() {
+        window.location.replace("/#Help!Unable-To-Download-Website");
+    }
+
+    xhr.open('GET', cors_proxy + encodeURI(url), true);
+    xhr.send();
 }
 
 function rick_roll() {
     document.documentElement.innerHTML = '<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" frameborder="0" style="overflow:hidden;height:100%;width:100%" height="100%" width="100%" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
-}
+};
 
 function GetParams() {
     URI = new URL(location.href);
@@ -180,17 +184,17 @@ function GetParams() {
         page = "1";
     }
     if (URI.searchParams.has("StartURL")) {
-		StartURL = URI.searchParams.get("StartURL");
-		if(StartURL == "none"){
-			console.log("StartURL is 'none' creating blank")
-		}else{
+        StartURL = URI.searchParams.get("StartURL");
+        if (StartURL == "none") {
+            console.log("StartURL is 'none' creating blank")
+        } else {
             CONTENT[page] = true;
-		}
-		if (history.pushState) {
-			URI.searchParams.delete("StartURL")
+        }
+        if (history.pushState) {
+            URI.searchParams.delete("StartURL")
             window.history.replaceState({}, "", URI.toString());
-		}
-	}
+        }
+    }
     return is_error
 }
 
