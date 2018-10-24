@@ -35,6 +35,7 @@ var xhr = new XMLHttpRequest();
     }
   } 
   xhr.onerror = function() {
+    alert("wsninja the 3rd party WebSocket host we use is currently offline. please contact me on discord");
 	  window.location.replace("/#Help!Unable-To-Create-WebShocket");
   }
   xhr.open('GET', "https://node2.wsninja.io/?gen=broadcast", true);
