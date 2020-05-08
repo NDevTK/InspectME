@@ -1,5 +1,5 @@
 # InspectME 2020!
-Allowing the power of Inspect Element to be sheared since 2018
+Allowing the power of Inspect Element to be sheared.
 
 Synchronizes content between clients using webshockets.   
 There will probably be inefficient code and lack of testing.   
