@@ -1,26 +1,30 @@
-Sync = [];
+/*jshint esversion: 8 */
+
+// NDev 2020 https://github.com/NDevTK/InspectME
+
+var Sync = [];
 const cors_proxy = "https://cors.usercontent.ndev.tk/?url=";
 
-UpdateRate = 1000;
-RaceTimeout = 2000;
-Timeout = 4000;
-retryTime = 300;
-InputUpdateBusy = [];
+var UpdateRate = 1000;
+var RaceTimeout = 2000;
+var Timeout = 4000;
+var retryTime = 300;
+var InputUpdateBusy = [];
 
-html = new Map();
-URLMap = new Map();
-Redirect = new Map();
-inputs_pages = [];
+var html = new Map();
+var URLMap = new Map();
+var Redirect = new Map();
+var inputs_pages = [];
 
-Owner = false;
-old_html = "";
-original = new Map();
-URLHistory = new Map();
-Loop = false;
-dmp = new diff_match_patch();
+var Owner = false;
+var old_html = "";
+var original = new Map();
+var URLHistory = new Map();
+var Loop = false;
+var dmp = new diff_match_patch();
 
-rick_roll = () => document.documentElement.innerHTML = '<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" frameborder="0" style="overflow:hidden;height:100%;width:100%" height="100%" width="100%" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
-TakeOwnership = () => Owner = true;
+const rick_roll = () => document.documentElement.innerHTML = '<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" frameborder="0" style="overflow:hidden;height:100%;width:100%" height="100%" width="100%" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+const TakeOwnership = () => Owner = true;
 
 Math.seed = s => { // Magic seed function I did not make
     var mask = 0xffffffff;
@@ -34,25 +38,24 @@ Math.seed = s => { // Magic seed function I did not make
         var result = ((m_z << 16) + (m_w & 65535)) >>> 0;
         result /= 4294967296;
         return result;
-    }
-}
+    };
+};
 
 function status(response) {
     if (response.status >= 200 && response.status < 300) {
-        return Promise.resolve(response)
+        return Promise.resolve(response);
     } else {
-        return Promise.reject(new Error(response.statusText))
+        return Promise.reject(new Error(response.statusText));
     }
 }
 
 function redirected(url) {
-    var url;
-    for (var i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 10; i++) {
         if (Redirect.has(url)) {
             url = Redirect.get(url);
-            if (!Redirect.has(url)) return url
+            if (!Redirect.has(url)) return url;
         } else {
-            return url
+            return url;
         }
     }
     window.location.replace("/#Help!Redirect-Loop");
@@ -117,7 +120,7 @@ socket.onopen = event => {
         ACTION: "Noob"
     }));
     setTimeout(() => {
-        if (!html.has(0)) OwnershipChange()
+        if (!html.has(0)) OwnershipChange();
     }, Timeout);
 };
 
@@ -147,7 +150,7 @@ function PageChecker(page) {
             PAGE: page
         }));
         return true;
-    };
+    }
     return false;
 }
 
@@ -159,12 +162,13 @@ function PageState(event) {
 
 
 async function InputUpdate(Index) { // Gets run on event "input" foreach input   
-    if (!Sync[page]) return
+    if (!Sync[page]) return;
     while (InputUpdateBusy[Index]) await sleep(retryTime);
     InputUpdateBusy[Index] = true;
     var current = inputs[Index].value;
     if (!inputs_pages[page].hasOwnProperty(Index) || inputs_pages[page][Index] === current) {
-        return InputUpdateBusy[Index] = false;
+        InputUpdateBusy[Index] = false;
+        return;
     }
     var previous = inputs_pages[page][Index];
     socket.send(JSON.stringify({ // Send value changes
@@ -172,7 +176,7 @@ async function InputUpdate(Index) { // Gets run on event "input" foreach input
         INDEX: Index,
         PAGE: page,
         Patch: dmp.patch_make(previous, current)
-    }))
+    }));
     inputs_pages[page][Index] = current; // Update inputs_pages with new content
     InputUpdateBusy[Index] = false;
 }
@@ -191,9 +195,9 @@ function RegisterInputs(firstTime) {
 
 
 async function SetInputs(InputsPage) {
-    if(!inputs_pages.hasOwnProperty(InputsPage)) return
+    if(!inputs_pages.hasOwnProperty(InputsPage)) return;
     var Values = inputs_pages[InputsPage];
-    if (InputsPage !== page) return
+    if (InputsPage !== page) return;
     while(ApplyInputChangesBusy[InputsPage] || ApplyChangesBusy[InputsPage]) await sleep(retryTime);
     inputs = document.querySelectorAll('input');
     Values.forEach((item, index) => { // Foreach item check if has index and set new value if true
@@ -214,7 +218,7 @@ async function ApplyInputChanges(index, Patch, PAGE) { // Apply patch to HTML
 
 function ApplyInputChanges_Action(index, Patch, PAGE) { // Apply Patch to input value
     ApplyInputChangesBusy[page] = true;
-    if (!Sync[PAGE]) return
+    if (!Sync[PAGE]) return;
     inputs_pages[PAGE][index] = dmp.patch_apply(Patch, inputs_pages[PAGE][index])[0];
     if(page === PAGE) inputs[index].value = inputs_pages[PAGE][index];
     ApplyInputChangesBusy[page] = false;
@@ -227,7 +231,7 @@ function sha512(str) {
 }
 
 socket.addEventListener('message', async event => { // OnMessage
-    if (!isJSON(event.data)) return
+    if (!isJSON(event.data)) return;
     var message = JSON.parse(event.data);
     if (message.ACTION !== "DOWNLOAD" && message.ACTION !== "DOWNLOAD_full" && PageChecker(message.PAGE)) return;
     if (html.has(message.PAGE)) {
@@ -340,7 +344,6 @@ function ApplyChanges_Action(Patch) { // Apply patch to HTML
 }
 
 function addhttps(url) { // Auto add https for setURL
-    var url;
     if (!/^(?:f|ht)tps?\:\/\//.test(url)) {
         url = "https://".concat(url);
     }
@@ -355,7 +358,7 @@ function Blank(url) {
     current_url = url;
     Sync[page] = true; // Enable Sync
     loop_safe(); // Start Main loops
-    return
+    return;
 }
 
 function AddToHistory(url) {
@@ -396,20 +399,18 @@ function ContentCorrupt(p, url) {
 }
 
 function setURL(url, SETURL_PAGE = page, Patch, checksum = false) {
-    var url = redirected(url);
-    var url = addhttps(url);
+    url = addhttps(redirected(url));
     var ActivePage = (SETURL_PAGE === page);
     var ReplyURL;
-    var response;
     Sync[SETURL_PAGE] = false;
     if (url == "https://about:blank") {
         Blank();
-        return
+        return;
     }
     if (ActivePage) {
         document.documentElement.innerHTML = "<h1>Loading URL...</h1>";
     }
-    if(CheckLocal(ActivePage, url)) return
+    if(CheckLocal(ActivePage, url)) return;
     fetch(cors_proxy + encodeURI(url)).then(status).catch(error => {
         window.location.replace("/#Help!Unable-To-Download-Website"); // :(
     }).then(response => {
@@ -455,11 +456,11 @@ function GetParams() {
         ID = encodeURI(URI.searchParams.get("cid"));
         Math.seed(ID);
     } else {
-        return true
+        return true;
     }
 
     if (URI.searchParams.has("page")) {
-        page = URI.searchParams.get("page")
+        page = URI.searchParams.get("page");
         if (isNaN(page)) page = null; // No pages yet
     } else {
         page = null;
