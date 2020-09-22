@@ -3,7 +3,7 @@
 // NDev 2020 https://github.com/NDevTK/InspectME
 
 var Sync = [];
-const cors_proxy = "https://cors.usercontent.ndev.tk/?url=";
+const cors_proxy = "https://cors-anywhere.herokuapp.com/";
 
 var UpdateRate = 1000;
 var RaceTimeout = 2000;
