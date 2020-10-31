@@ -124,7 +124,7 @@ socket.onopen = event => {
     }, Timeout);
     setInterval(function() {
         if(Owner) socket.send("ping");
-    }, 60000);
+    }, 50000);
 };
 
 socket.onerror = event => {
