@@ -139,6 +139,9 @@ function OwnershipChange() {
             ACTION: "OWNER",
             BODY: NewOwner
         }));
+        socket.send(JSON.stringify({ // Get reset of pages
+            ACTION: "Noob"
+        }));
     }, RaceTimeout);
 }
 
