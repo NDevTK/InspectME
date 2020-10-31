@@ -122,6 +122,7 @@ socket.onopen = event => {
     setTimeout(() => {
         if (!html.has(0)) OwnershipChange();
     }, Timeout);
+    setInterval(function(){ socket.send(""); }, 10000);
 };
 
 socket.onerror = event => {
