@@ -10,15 +10,18 @@ if(window.confirm("WARNING: if you continue you will Self-XSS yourself for inspe
     throw "Nah";
 }
 
-var Sync = [];
+var Sync = new Set();
 const cors_proxy = "https://cors-anywhere.herokuapp.com/";
-
+var current_url;
+var StartURL;
+var page;
 var UpdateRate = 1000;
 var RaceTimeout = 2000;
 var Timeout = 4000;
 var retryTime = 300;
 var InputUpdateBusy = new Set();
 var ApplyInputChangesBusy = new Set();
+var ApplyChangesBusy = new Set();
 
 var html = new Map();
 var URLMap = new Map();
@@ -81,7 +84,7 @@ if (GetParams()) { // If error
 }
 
 function SendNewChanges() { // Main function that checks the html for changes
-    if (!Sync[page]) return;
+    if (!Sync.has(page)) return;
     old_html = html.get(page); // Both are the same
     html.set(page, document.documentElement.innerHTML); // gets new HTML
     if (old_html != html.get(page)) {
@@ -177,7 +180,7 @@ function PageState(event) {
 
 
 async function InputUpdate(Index) { // Gets run on event "input" foreach input   
-    if (!Sync[page]) return;
+    if (!Sync.has(page)) return;
     while (InputUpdateBusy.has(Index)) await sleep(retryTime);
     InputUpdateBusy.add(Index);
     var current = inputs[Index].value;
@@ -231,7 +234,7 @@ async function ApplyInputChanges(index, Patch, PAGE) { // Apply patch to HTML
 
 function ApplyInputChanges_Action(index, Patch, PAGE) { // Apply Patch to input value
     ApplyInputChangesBusy.add(page);
-    if (!Sync[PAGE]) return;
+    if (Sync.has(PAGE)) return;
     inputs_pages[PAGE][index] = dmp.patch_apply(Patch, inputs_pages[PAGE][index])[0];
     if(page === PAGE) inputs[index].value = inputs_pages[PAGE][index];
     ApplyInputChangesBusy.delete(page);
@@ -275,7 +278,7 @@ socket.addEventListener('message', async event => { // OnMessage
                 ApplyInputChanges(message.INDEX, message.Patch, message.PAGE);
                 break;
             case "setURL":
-                Sync[message.PAGE] = false;
+                Sync.delete(message.PAGE);
                 setURL(message.URL); // Sync URL
                 break;
         }
@@ -338,22 +341,20 @@ socket.addEventListener('message', async event => { // OnMessage
     }
 });
 
-ApplyChangesBusy = [];
-
 async function ApplyChanges(Patch) { // Apply patch to HTML
-    while(ApplyChangesBusy[Patch.PAGE]) await sleep(300);
+    while(ApplyChangesBusy.has(Patch.PAGE)) await sleep(300);
     ApplyChanges_Action(Patch);
 }
 
 
 function ApplyChanges_Action(Patch) { // Apply patch to HTML
-    ApplyChangesBusy[Patch.PAGE] = true;
+    ApplyChangesBusy.add(Patch.PAGE);
     html.set(Patch.PAGE, dmp.patch_apply(Patch.DATA, html.get(Patch.PAGE))[0]);
     if (Patch.PAGE == page) { // If Patch is for current page
         document.documentElement.innerHTML = html.get(page);
         SetInputs(page);
     }
-    ApplyChangesBusy[Patch.PAGE] = false;
+    ApplyChangesBusy.delete(Patch.PAGE);
 }
 
 function addhttps(url) { // Auto add https for setURL
@@ -369,7 +370,7 @@ function Blank(url) {
     if(inputs_pages.hasOwnProperty(page)) SetInputs(page);
     old_html = document.documentElement.innerHTML;
     current_url = url;
-    Sync[page] = true; // Enable Sync
+    Sync.add(page); // Enable Sync
     loop_safe(); // Start Main loops
     return;
 }
@@ -415,7 +416,7 @@ function setURL(url, SETURL_PAGE = page, Patch, checksum = false) {
     url = addhttps(redirected(url));
     var ActivePage = (SETURL_PAGE === page);
     var ReplyURL;
-    Sync[SETURL_PAGE] = false;
+    Sync.delete(SETURL_PAGE);
     if (url == "https://about:blank") {
         Blank();
         return;
@@ -445,7 +446,7 @@ function setURL(url, SETURL_PAGE = page, Patch, checksum = false) {
         html.set(SETURL_PAGE, response);
         URLMap.set(ReplyURL.href, SETURL_PAGE);
         loop_safe(); // Start Main loops
-        Sync[SETURL_PAGE] = true;
+        Sync.add(SETURL_PAGE);
     });
 }
 
@@ -456,7 +457,7 @@ function CheckLocal(ActivePage, url) {
         current_url = url;
         if(inputs_pages.hasOwnProperty(page)) SetInputs(page);
         URLHistory.set(page, url);
-        Sync[page] = true;
+        Sync.add(page);
         return true;
     }
     return false;
