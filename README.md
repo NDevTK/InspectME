@@ -1,5 +1,5 @@
 # InspectME 2021!
-Allowing the power of Inspect Element to be sheared.
+Allowing the power of Inspect Element to be shared.
 
 Synchronizes content between clients using webshockets.   
 There will probably be inefficient code and lack of testing.   
