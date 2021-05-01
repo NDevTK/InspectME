@@ -216,7 +216,7 @@ async function SetInputs(InputsPage) {
     if(!inputs_pages.hasOwnProperty(InputsPage)) return;
     var Values = inputs_pages[InputsPage];
     if (InputsPage !== page) return;
-    while(ApplyInputChangesBusy.has(InputsPage)) await sleep(retryTime);
+    while(ApplyInputChangesBusy.has(InputsPage) || ApplyChangesBusy.has(InputsPage)) await sleep(retryTime);
     inputs = document.querySelectorAll('input');
     Values.forEach((item, index) => { // Foreach item check if has index and set new value if true
         if (inputs.hasOwnProperty(index) && inputs[index].hasAttribute("value")) inputs[index].value = item;
