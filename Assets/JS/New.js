@@ -47,5 +47,5 @@ function GetStarted() {
 
     var cid = randomCID();
     prompt("Give this to someone idk: ", base + cid);
-    window.location.replace(base + encodeURI(cid) + "&StartURL=" + encodeURI(url));
+    window.location.replace(base + encodeURIComponent(cid) + "&StartURL=" + encodeURIComponent(url));
 }
