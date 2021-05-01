@@ -2,6 +2,7 @@
 
 // NDev 2020 https://github.com/NDevTK/InspectME
 
+// Its 100% Self-XSS who would just click ok to this without reading it?
 if(window.confirm("WARNING: if you continue you will Self-XSS yourself for this origin.") !== true) {
     window.location.href = "/";
     throw "Nah";
