@@ -1,6 +1,7 @@
-base = "https://inspectme.ndev.tk/Web/?cid=";
+'use strict';
+const base = "https://inspectme.ndev.tk/Web/?cid=";
 function is_url(str) {
-    regexp = /^(?:(?:https?|ftp):\/\/)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/\S*)?$/;
+    const regexp = /^(?:(?:https?|ftp):\/\/)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/\S*)?$/;
     if (regexp.test(str)) {
         return true;
     } else {
@@ -8,17 +9,13 @@ function is_url(str) {
     }
 }
 
-function randomCID(length = 19, v2 = false) {
-    if(v2) {
-    alert("[websocket.in v2] Channel ID can only be 1-10000 so it will not be secure");
-    return new Date().getTime().toString().substr(5,5)
-    }
-    var charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+function randomCID(length = 19) {
+    const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     var i;
     var result = "";
-    var isOpera = Object.prototype.toString.call(window.opera) == '[object Opera]';
+    const isOpera = Object.prototype.toString.call(window.opera) == '[object Opera]';
     if (window.crypto && window.crypto.getRandomValues) {
-        values = new Uint32Array(length);
+        let values = new Uint32Array(length);
         window.crypto.getRandomValues(values);
         for (i = 0; i < length; i++) {
             result += charset[values[i] % charset.length];
@@ -34,7 +31,7 @@ function randomCID(length = 19, v2 = false) {
 }
 
 function GetStarted() {
-    url = prompt("Please enter an url (optional):");
+    const url = prompt("Please enter an url (optional):");
 
     if (url === null) return;
 
@@ -45,7 +42,7 @@ function GetStarted() {
         window.location.replace("/#Help!URL-Not-Valid");
     }
 
-    var cid = randomCID();
+    const cid = randomCID();
     prompt("Give this to someone idk: ", base + cid);
     window.location.replace(base + encodeURIComponent(cid) + "&StartURL=" + encodeURIComponent(url));
 }
