@@ -1,9 +1,10 @@
 /*jshint esversion: 8 */
 
-// NDev 2020 https://github.com/NDevTK/InspectME
+// NDev 2021 https://github.com/NDevTK/InspectME
+
 
 // Its 100% Self-XSS who would just click ok to this without reading it?
-if(window.confirm("WARNING: if you continue you will Self-XSS yourself for this origin.") !== true) {
+if(window.confirm("WARNING: if you continue you will Self-XSS yourself for inspectme.ndev.tk") !== true) {
     window.location.href = "/";
     throw "Nah";
 }
