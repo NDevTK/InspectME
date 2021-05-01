@@ -29,7 +29,7 @@ var original = new Map();
 var URLHistory = new Map();
 var Loop = false;
 var dmp = new diff_match_patch();
-
+// Joke review for 2021, stil funny.
 const rick_roll = () => document.documentElement.innerHTML = '<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" frameborder="0" style="overflow:hidden;height:100%;width:100%" height="100%" width="100%" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
 const TakeOwnership = () => Owner = true;
 
