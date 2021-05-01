@@ -4,7 +4,7 @@
 
 if(window.confirm("WARNING: if you continue you will Self-XSS yourself for this origin.") !== true) {
     window.location.href = "/";
-    return
+    throw "Nah";
 }
 
 var Sync = [];
