@@ -2,6 +2,11 @@
 
 // NDev 2020 https://github.com/NDevTK/InspectME
 
+if(window.confirm("WARNING: if you continue you will Self-XSS yourself for this origin.") !== true) {
+    window.location.href = "/";
+    return
+}
+
 var Sync = [];
 const cors_proxy = "https://cors-anywhere.herokuapp.com/";
 
