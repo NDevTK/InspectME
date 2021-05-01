@@ -1,3 +1,4 @@
+'use strict';
 /*jshint esversion: 8 */
 
 // NDev 2021 https://github.com/NDevTK/InspectME
@@ -16,7 +17,8 @@ var UpdateRate = 1000;
 var RaceTimeout = 2000;
 var Timeout = 4000;
 var retryTime = 300;
-var InputUpdateBusy = [];
+var InputUpdateBusy = new Set();
+var ApplyInputChangesBusy = new Set();
 
 var html = new Map();
 var URLMap = new Map();
@@ -176,11 +178,11 @@ function PageState(event) {
 
 async function InputUpdate(Index) { // Gets run on event "input" foreach input   
     if (!Sync[page]) return;
-    while (InputUpdateBusy[Index]) await sleep(retryTime);
-    InputUpdateBusy[Index] = true;
+    while (InputUpdateBusy.has(Index)) await sleep(retryTime);
+    InputUpdateBusy.add(Index);
     var current = inputs[Index].value;
     if (!inputs_pages[page].hasOwnProperty(Index) || inputs_pages[page][Index] === current) {
-        InputUpdateBusy[Index] = false;
+        InputUpdateBusy.delete(Index);
         return;
     }
     var previous = inputs_pages[page][Index];
@@ -191,7 +193,7 @@ async function InputUpdate(Index) { // Gets run on event "input" foreach input
         Patch: dmp.patch_make(previous, current)
     }));
     inputs_pages[page][Index] = current; // Update inputs_pages with new content
-    InputUpdateBusy[Index] = false;
+    InputUpdateBusy.delete(Index);
 }
 
 function RegisterInputs(firstTime) {
@@ -211,7 +213,7 @@ async function SetInputs(InputsPage) {
     if(!inputs_pages.hasOwnProperty(InputsPage)) return;
     var Values = inputs_pages[InputsPage];
     if (InputsPage !== page) return;
-    while(ApplyInputChangesBusy[InputsPage] || ApplyChangesBusy[InputsPage]) await sleep(retryTime);
+    while(ApplyInputChangesBusy.has(InputsPage)) await sleep(retryTime);
     inputs = document.querySelectorAll('input');
     Values.forEach((item, index) => { // Foreach item check if has index and set new value if true
         if (inputs.hasOwnProperty(index) && inputs[index].hasAttribute("value")) inputs[index].value = item;
@@ -222,19 +224,17 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-ApplyInputChangesBusy = [];
-
 async function ApplyInputChanges(index, Patch, PAGE) { // Apply patch to HTML
-    while (ApplyInputChangesBusy[Patch.PAGE]) await sleep(retryTime);
+    while (ApplyInputChangesBusy.has(Patch.PAGE)) await sleep(retryTime);
     return ApplyInputChanges_Action(index, Patch, PAGE);
 }
 
 function ApplyInputChanges_Action(index, Patch, PAGE) { // Apply Patch to input value
-    ApplyInputChangesBusy[page] = true;
+    ApplyInputChangesBusy.add(page);
     if (!Sync[PAGE]) return;
     inputs_pages[PAGE][index] = dmp.patch_apply(Patch, inputs_pages[PAGE][index])[0];
     if(page === PAGE) inputs[index].value = inputs_pages[PAGE][index];
-    ApplyInputChangesBusy[page] = false;
+    ApplyInputChangesBusy.delete(page);
 }
 
 function sha512(str) {
