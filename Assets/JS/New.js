@@ -31,7 +31,7 @@ function randomCID(length = 19) {
 }
 
 function GetStarted() {
-    const url = prompt("Please enter an url (optional):");
+    let url = prompt("Please enter an url (optional):");
 
     if (url === null) return;
 
